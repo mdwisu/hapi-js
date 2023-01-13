@@ -1,5 +1,4 @@
 const Joi = require('joi');
-const handlers = require('../handlers/blog');
 
 const bookSchema = Joi.object({
   title: Joi.string().required(),
@@ -13,8 +12,32 @@ module.exports = [
   {
     method: 'GET',
     path: '/books',
-    handler: async function (request, h) {
-      return await getBooks();
+    handler(request, h) {
+      return h
+        .response([
+          {
+            title: 123,
+            author: 'john smith',
+            isbn: '1234567890',
+            pageCount: 100,
+            datePublished: '2020-02-01',
+          },
+          {
+            title: 123,
+            author: 'john smith',
+            isbn: '1234567890',
+            pageCount: 100,
+            datePublished: '2020-02-01',
+          },
+          {
+            title: 123,
+            author: 'john smith',
+            isbn: '1234567890',
+            pageCount: 100,
+            datePublished: '2020-02-01',
+          },
+        ])
+        .code(201);
     },
     options: {
       response: {

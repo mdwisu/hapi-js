@@ -2,7 +2,6 @@ var user = require('./user');
 let blog = require('./blog');
 let book = require('./book');
 
-
 let index = [
   {
     method: ['GET', 'PUT', 'POST'],
@@ -16,7 +15,7 @@ let index = [
     path: '/hello',
     handler: (request, h) => {
       // cookie
-      h.state('username', 'dwi');
+      h.state('username', "dwi");
       console.log(request.state.username); //undefined
       return 'Hello world!' + h.getDate();
     },
@@ -42,6 +41,13 @@ let index = [
     path: '/home',
     handler: function (request, h) {
       return h.redirect('/');
+    },
+  },
+  {
+    method: 'GET',
+    path: '/pug',
+    handler: function (request, h) {
+      return h.view('index', { title: 'Homepage', message: 'Welcome' });
     },
   },
 ];

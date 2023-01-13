@@ -6,14 +6,28 @@ const start = async () => {
   const server = Hapi.server({
     port: 5000,
     host: 'localhost',
+    debug: { request: ['error'] }, // untuk response validator supaya muncul di log
   });
 
-  await server.register({
-    plugin: getDate,
-    options: {
-      name: 'Muhammad Dwi Susanto',
-      age: 21,
+  await server.register([
+    {
+      plugin: getDate,
+      options: {
+        name: 'Muhammad Dwi Susanto',
+        age: 21,
+      },
     },
+    {
+      plugin: require('@hapi/vision'),
+    },
+  ]);
+
+  server.views({
+    engines: {
+      pug: require('pug'),
+    },
+    relativeTo: __dirname,
+    path: 'app/templates',
   });
 
   // !extension point
@@ -26,6 +40,10 @@ const start = async () => {
     ttl: null, //24 * 60 * 60 * 1000, //one day
     isSecure: false,
     isHttpOnly: true,
+    // encoding: 'base64json',
+    // clearInvalid: false, // remove invalid cookies
+    // strictHeader: true, // don't allow violations of RFC 6265
+    // path: '/',
   });
 
   server.route(routes);
