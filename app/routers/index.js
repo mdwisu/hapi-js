@@ -1,6 +1,7 @@
-var user = require('./user');
+let user = require('./user');
 let blog = require('./blog');
 let book = require('./book');
+let authTwitter = require('./authTwitter');
 
 let index = [
   {
@@ -15,7 +16,7 @@ let index = [
     path: '/hello',
     handler: (request, h) => {
       // cookie
-      h.state('username', "dwi");
+      h.state('username', 'dwi');
       console.log(request.state.username); //undefined
       return 'Hello world!' + h.getDate();
     },
@@ -52,4 +53,4 @@ let index = [
   },
 ];
 
-module.exports = [].concat(index, user, blog, book);
+module.exports = [].concat(index, user, blog, book, authTwitter);

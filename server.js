@@ -1,11 +1,13 @@
+require('dotenv').config();
 const Hapi = require('@hapi/hapi');
+const bell = require('@hapi/bell');
 const { getDate } = require('./app/plugins/date');
 const routes = require('./app/routers/index');
 
 const start = async () => {
   const server = Hapi.server({
-    port: 5000,
-    host: 'localhost',
+    port: process.env.PORT,
+    host: process.env.HOST,
     debug: { request: ['error'] }, // untuk response validator supaya muncul di log
   });
 
@@ -20,7 +22,16 @@ const start = async () => {
     {
       plugin: require('@hapi/vision'),
     },
+    bell,
   ]);
+
+  server.auth.strategy('twitter', 'bell', {
+    provider: 'twitter',
+    password: 'adsfa8sdf78a7dsf87das8f7',
+    clientId: process.env.TWITTER_CONSUMER_KEY,
+    clientSecret: process.env.TWITTER_CONSUMER_SECRET,
+    isSecure: false,
+  });
 
   server.views({
     engines: {
