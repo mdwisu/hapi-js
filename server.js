@@ -1,8 +1,13 @@
-require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const bell = require('@hapi/bell');
-const { getDate } = require('./app/plugins/date');
-const routes = require('./app/routers/index');
+const routes = require('./src/routes/index');
+const { getDate } = require('./src/plugins/date');
+const mongoose = require('mongoose');
+const { connectToMongo } = require('./src/helpers/db/connectToMongo');
+const { jwt_secret } = require('./src/config/auth');
+const HapiJWT2 = require('hapi-auth-jwt2');
+
+connectToMongo();
 
 const start = async () => {
   const server = Hapi.server({
@@ -10,7 +15,6 @@ const start = async () => {
     host: process.env.HOST,
     debug: { request: ['error'] }, // untuk response validator supaya muncul di log
   });
-
   await server.register([
     {
       plugin: getDate,
@@ -23,14 +27,41 @@ const start = async () => {
       plugin: require('@hapi/vision'),
     },
     bell,
+    HapiJWT2,
   ]);
 
-  server.auth.strategy('twitter', 'bell', {
+  // !auth strategy
+  const twitterAuthOpt = {
     provider: 'twitter',
     password: 'adsfa8sdf78a7dsf87das8f7',
     clientId: process.env.TWITTER_CONSUMER_KEY,
     clientSecret: process.env.TWITTER_CONSUMER_SECRET,
     isSecure: false,
+  };
+  const googleAuthOpt = {
+    provider: 'google',
+    password: 'cookie_encryption_password',
+    clientId: 'your_client_id',
+    clientSecret: 'your_client_secret',
+    isSecure: false,
+  };
+
+  server.auth.strategy('twitter', 'bell', twitterAuthOpt);
+  server.auth.strategy('google', 'bell', googleAuthOpt);
+  server.auth.strategy('admin', 'jwt', {
+    key: jwt_secret,
+    validate: (decoded, request) => {
+      if (
+        decoded.role === 'admin' ||
+        decoded.role === 'user' ||
+        decoded.role === 'super_admin'
+      ) {
+        return { isValid: true, credentials: decoded };
+      } else {
+        return { isValid: false };
+      }
+    },
+    verifyOptions: { algorithms: ['HS256'] },
   });
 
   server.views({
@@ -38,7 +69,7 @@ const start = async () => {
       pug: require('pug'),
     },
     relativeTo: __dirname,
-    path: 'app/templates',
+    path: 'src/views',
   });
 
   // !extension point
@@ -46,6 +77,7 @@ const start = async () => {
   //   request.setUrl('/hello');
   //   return h.continue;
   // });
+
   // !cookie parser
   server.state('username', {
     ttl: null, //24 * 60 * 60 * 1000, //one day
@@ -57,7 +89,14 @@ const start = async () => {
     // path: '/',
   });
 
-  server.route(routes);
+  server.route(routes, {
+    method: '*',
+    path: '/{any*}',
+    handler: (request, h) => {
+      // return h.response('404 Not Found').code(404);
+      throw Boom.notFound('API Tidak Ditemukan');
+    },
+  });
 
   await server.start();
   console.log('Server running on port 3000');
@@ -66,6 +105,14 @@ const start = async () => {
 process.on('unhandledRejection', (err) => {
   console.log(err);
   process.exit(1);
+});
+process.on('SIGINT', function () {
+  mongoose.connection.close(function () {
+    console.log(
+      'Mongoose default connection disconnected through app termination'
+    );
+    process.exit(0);
+  });
 });
 
 start();
