@@ -48,7 +48,7 @@ const start = async () => {
 
   server.auth.strategy('twitter', 'bell', twitterAuthOpt);
   server.auth.strategy('google', 'bell', googleAuthOpt);
-  server.auth.strategy('admin', 'jwt', {
+  server.auth.strategy('jwt', 'jwt', {
     key: jwt_secret,
     validate: (decoded, request) => {
       if (
