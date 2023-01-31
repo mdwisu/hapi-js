@@ -1,5 +1,7 @@
 const Hapi = require('@hapi/hapi');
 const bell = require('@hapi/bell');
+const Path = require('path');
+const Inert = require('@hapi/inert');
 const routes = require('./src/routes/index');
 const { getDate } = require('./src/plugins/date');
 const mongoose = require('mongoose');
@@ -28,6 +30,15 @@ const start = async () => {
     },
     bell,
     HapiJWT2,
+    {
+      plugin: require('hapi-api-version'),
+      options: {
+        validVersions: [1, 2],
+        defaultVersion: 2,
+        vendorName: 'mysuperapi',
+      },
+    },
+    Inert,
   ]);
 
   // !auth strategy
@@ -89,17 +100,31 @@ const start = async () => {
     // path: '/',
   });
 
-  server.route(routes, {
-    method: '*',
-    path: '/{any*}',
-    handler: (request, h) => {
-      // return h.response('404 Not Found').code(404);
-      throw Boom.notFound('API Tidak Ditemukan');
+  server.route(
+    {
+      method: '*',
+      path: '/{any*}',
+      handler: (request, h) => {
+        // return h.response('404 Not Found').code(404);
+        throw Boom.notFound('API Tidak Ditemukan');
+      },
     },
-  });
+    // routes,
+    {
+      method: 'GET',
+      path: '/img/{param*}',
+      handler: {
+        directory: {
+          path: 'public',
+          redirectToSlash: true,
+          index: true,
+        },
+      },
+    }
+  );
 
   await server.start();
-  console.log('Server running on port 3000');
+  console.log('Server running on port 5000');
 };
 
 process.on('unhandledRejection', (err) => {

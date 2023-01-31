@@ -1,11 +1,9 @@
 const article = require('./article');
 const auth = require('./auth');
 const user = require('./user');
+const upload = require('./upload');
 
-module.exports = [
-  ...user,
-  ...auth,
-  ...article,
+const index = [
   {
     method: ['GET', 'PUT', 'POST'],
     path: '/',
@@ -17,7 +15,7 @@ module.exports = [
     method: ['GET', 'PUT', 'POST'],
     path: '/notfound',
     handler: (request, h) => {
-      throw Boom.notFound('API Tidak Ditemukan');
+      throw Boom.notFound('API not found');
     },
   },
   {
@@ -61,3 +59,5 @@ module.exports = [
     },
   },
 ];
+
+module.exports = index.concat(user, auth, article);

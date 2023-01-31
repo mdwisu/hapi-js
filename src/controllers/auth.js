@@ -44,35 +44,45 @@ module.exports = {
       });
   },
   login: (request, h) => {
-    let { email, password } = request.payload;
-    return User.findOne({ email })
-      .then((user) => {
-        if (!user) return Boom.unauthorized('Email or password is incorrect');
-        if (!user.isVerified)
-          return Boom.forbidden(
-            'Email is not verified, please verify it before logging in'
-          );
-        return user.comparePassword(password).then((isMatch) => {
-          if (!isMatch) return { message: 'Invalid email or password' };
-          let token = jwt.token.generate(
-            { _id: user._id, role: user.role },
-            configAuth.jwt_secret,
-            {
-              expiresIn: '1d',
-            }
-          );
-          return { message: 'Logged in successfully', token };
+    const version = request.pre.apiVersion;
+    console.log(version);
+    if (version === 1) {
+      let { email, password } = request.payload;
+      return User.findOne({ email })
+        .then((user) => {
+          if (!user) return Boom.unauthorized('Email or password is incorrect');
+          if (!user.isVerified)
+            return Boom.forbidden(
+              'Email is not verified, please verify it before logging in'
+            );
+          return user.comparePassword(password).then((isMatch) => {
+            if (!isMatch) return { message: 'Invalid email or password' };
+            let token = jwt.token.generate(
+              { _id: user._id, role: user.role },
+              configAuth.jwt_secret,
+              {
+                expiresIn: '1d',
+              }
+            );
+            return { message: 'Logged in successfully', token };
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+          return h
+            .response({
+              message: 'An internal server error occurred',
+              error: err.message,
+            })
+            .code(500);
         });
-      })
-      .catch((err) => {
-        console.error(err);
-        return h
-          .response({
-            message: 'An internal server error occurred',
-            error: err.message,
-          })
-          .code(500);
-      });
+    } else if (version === 2) {
+      return h
+        .response({
+          message: 'masi dalam tahap pengembangan',
+        })
+        .code(500);
+    }
   },
   logout: async (request, h) => {
     try {

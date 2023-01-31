@@ -8,6 +8,7 @@ const userSchema = new Schema({
   password: { type: String, required: true },
   isVerified: { type: Boolean, default: false },
   role: { type: String, default: "user" },
+  profileImage: {type: String, }
 });
 
 userSchema.methods.comparePassword = function (password) {

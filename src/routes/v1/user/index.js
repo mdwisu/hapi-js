@@ -11,7 +11,7 @@ module.exports = [
   },
   {
     method: 'GET',
-    path: '/users/{id}',
+    path: '/v1/users/{id}',
     handler: userController.findOne,
   },
   create,
